@@ -18,13 +18,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setIsClientMounted(true);
   }, []);
 
-  // Strict Option 1: Route Guard Rail Effect
+  // Strict Route Guard Rail
   useEffect(() => {
     if (!isClientMounted || isAuthPage) return;
 
     // Check 1: Must be authenticated to access protected pages
     if (!isAuthenticated) {
-      router.replace('/login?error=unauthenticated');
+      router.replace('/login');
       return;
     }
 
@@ -64,6 +64,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   if (isAuthPage) {
     return <main className="min-h-screen bg-[#F4F7FB]">{children}</main>;
+  }
+
+  // Prevent rendering internal dashboard layout for unauthenticated visitors
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#F4F7FB] flex items-center justify-center">
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 animate-pulse">
+          <span>Verifying security session...</span>
+        </div>
+      </div>
+    );
   }
 
   return (

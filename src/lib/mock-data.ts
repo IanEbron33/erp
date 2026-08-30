@@ -2,28 +2,12 @@ import { Product, Customer, SalesOrder, StockTransaction, FinancialEntry, AuditL
 
 export const INITIAL_USERS: UserProfile[] = [
   {
-    id: 'usr-1',
-    name: 'Eleanor Vance',
-    email: 'eleanor.vance@minierp.io',
+    id: 'usr-default',
+    name: 'Authenticated Staff',
+    email: 'staff@minierp.io',
     role: 'admin',
-    roleTitle: 'Managing Director & CFO',
+    roleTitle: 'ERP Administrator',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-  },
-  {
-    id: 'usr-2',
-    name: 'Marcus Sterling',
-    email: 'marcus.sterling@minierp.io',
-    role: 'sales',
-    roleTitle: 'Senior Sales Representative',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-  },
-  {
-    id: 'usr-3',
-    name: 'Darius Thorne',
-    email: 'darius.thorne@minierp.io',
-    role: 'inventory',
-    roleTitle: 'Lead Warehouse & Stock Clerk',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
   },
 ];
 

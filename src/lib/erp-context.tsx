@@ -102,47 +102,13 @@ const ERPContext = createContext<ERPContextType | undefined>(undefined);
 
 const STORAGE_KEY_PREFIX = 'minierp_state_';
 
-const DEFAULT_EMPLOYEES: Employee[] = [
-  {
-    id: 'emp-1',
-    name: 'Eleanor Vance',
-    email: 'admin@minierp.io',
-    password: 'admin123',
-    role: 'admin',
-    roleTitle: 'Managing Director & Admin',
-    status: 'active',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    createdAt: '2026-08-01',
-  },
-  {
-    id: 'emp-2',
-    name: 'Marcus Sterling',
-    email: 'sales@minierp.io',
-    password: 'sales123',
-    role: 'sales',
-    roleTitle: 'Senior Sales Representative',
-    status: 'active',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    createdAt: '2026-08-05',
-  },
-  {
-    id: 'emp-3',
-    name: 'Darius Thorne',
-    email: 'inventory@minierp.io',
-    password: 'inventory123',
-    role: 'inventory',
-    roleTitle: 'Lead Inventory & Stock Clerk',
-    status: 'active',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
-    createdAt: '2026-08-10',
-  },
-];
+const DEFAULT_EMPLOYEES: Employee[] = [];
 
 export function ERPProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<UserProfile>(INITIAL_USERS[0]);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
-  const [employees, setEmployees] = useState<Employee[]>(DEFAULT_EMPLOYEES);
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS);
   const [orders, setOrders] = useState<SalesOrder[]>(INITIAL_ORDERS);
   const [stockTransactions, setStockTransactions] = useState<StockTransaction[]>(INITIAL_STOCK_TRANSACTIONS);
@@ -155,15 +121,15 @@ export function ERPProvider({ children }: { children: React.ReactNode }) {
     try {
       const savedAuth = localStorage.getItem(STORAGE_KEY_PREFIX + 'auth');
       const savedUser = localStorage.getItem(STORAGE_KEY_PREFIX + 'current_user');
-      if (savedAuth === 'false') {
-        setIsAuthenticated(false);
-      } else if (savedAuth === 'true') {
+      if (savedAuth === 'true' && savedUser) {
         setIsAuthenticated(true);
-      }
-      if (savedUser) {
         setCurrentUser(JSON.parse(savedUser));
+      } else {
+        setIsAuthenticated(false);
       }
-    } catch {}
+    } catch {
+      setIsAuthenticated(false);
+    }
   }, []);
 
   // Fetch from Supabase if configured, otherwise load from localStorage
@@ -192,7 +158,7 @@ export function ERPProvider({ children }: { children: React.ReactNode }) {
             supabase.from('audit_logs').select('*').order('timestamp', { ascending: false }),
           ]);
 
-          if (dbStockTransactions && dbStockTransactions.length > 0) {
+          if (dbStockTransactions) {
             setStockTransactions(
               dbStockTransactions.map((tx) => ({
                 id: tx.id,
@@ -211,7 +177,7 @@ export function ERPProvider({ children }: { children: React.ReactNode }) {
             );
           }
 
-          if (dbEmployees && dbEmployees.length > 0) {
+          if (dbEmployees) {
             setEmployees(
               dbEmployees.map((e) => ({
                 id: e.id,
@@ -219,15 +185,15 @@ export function ERPProvider({ children }: { children: React.ReactNode }) {
                 email: e.email,
                 password: e.password || 'password123',
                 role: e.role as UserRole,
-                roleTitle: e.role_title,
+                roleTitle: e.role_title || `${e.role.toUpperCase()} Staff`,
                 status: e.status || 'active',
-                avatar: e.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${e.name}`,
+                avatar: e.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(e.name)}`,
                 createdAt: e.created_at ? e.created_at.split('T')[0] : '',
               }))
             );
           }
 
-          if (dbProducts && dbProducts.length > 0) {
+          if (dbProducts) {
             setProducts(
               dbProducts.map((p) => ({
                 id: p.id,
@@ -246,7 +212,7 @@ export function ERPProvider({ children }: { children: React.ReactNode }) {
             );
           }
 
-          if (dbCustomers && dbCustomers.length > 0) {
+          if (dbCustomers) {
             setCustomers(
               dbCustomers.map((c) => ({
                 id: c.id,
@@ -262,7 +228,7 @@ export function ERPProvider({ children }: { children: React.ReactNode }) {
             );
           }
 
-          if (dbOrders && dbOrders.length > 0) {
+          if (dbOrders) {
             const mappedOrders: SalesOrder[] = dbOrders.map((o) => {
               const items: OrderItem[] = (dbOrderItems || [])
                 .filter((item) => item.order_id === o.id)
@@ -300,7 +266,7 @@ export function ERPProvider({ children }: { children: React.ReactNode }) {
             setOrders(mappedOrders);
           }
 
-          if (dbFinancials && dbFinancials.length > 0) {
+          if (dbFinancials) {
             setFinancials(
               dbFinancials.map((f) => ({
                 id: f.id,
@@ -314,7 +280,7 @@ export function ERPProvider({ children }: { children: React.ReactNode }) {
             );
           }
 
-          if (dbAuditLogs && dbAuditLogs.length > 0) {
+          if (dbAuditLogs) {
             setAuditLogs(
               dbAuditLogs.map((a) => ({
                 id: a.id,
