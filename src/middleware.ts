@@ -6,7 +6,7 @@ export function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true' ||
     process.env.MAINTENANCE_MODE === 'true';
 
-  const { pathname, searchParams } = request.nextUrl;
+  const { pathname } = request.nextUrl;
 
   // 1. Exclude static files, Next.js internal assets, and maintenance routes
   if (
@@ -19,25 +19,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 2. Check for Admin Emergency Bypass via query parameter or cookie
-  const bypassParam = searchParams.get('bypass');
-  const hasBypassCookie = request.cookies.get('erp_maintenance_bypass')?.value === 'active';
-
-  if (bypassParam === 'admin' || hasBypassCookie) {
-    const response = NextResponse.next();
-    // Persist bypass state for the admin session
-    if (!hasBypassCookie && bypassParam === 'admin') {
-      response.cookies.set('erp_maintenance_bypass', 'active', {
-        path: '/',
-        maxAge: 60 * 60 * 8, // 8 hours
-        httpOnly: true,
-        sameSite: 'lax',
-      });
-    }
-    return response;
-  }
-
-  // 3. If Maintenance Mode is enabled, redirect incoming visitors to /maintenance
+  // 2. If Maintenance Mode is enabled, strictly redirect all incoming traffic to /maintenance
   if (isMaintenanceMode) {
     const maintenanceUrl = new URL('/maintenance', request.url);
     return NextResponse.redirect(maintenanceUrl, 307); // 307 Temporary Redirect
