@@ -12,7 +12,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { currentUser, isAuthenticated, logout } = useERP();
   const [isClientMounted, setIsClientMounted] = useState(false);
 
-  const isAuthPage = pathname === '/login';
+  const isStandalonePage =
+    pathname === '/login' ||
+    pathname === '/maintenance' ||
+    pathname === '/offline';
 
   useEffect(() => {
     setIsClientMounted(true);
@@ -20,7 +23,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   // Strict Route Guard Rail
   useEffect(() => {
-    if (!isClientMounted || isAuthPage) return;
+    if (!isClientMounted || isStandalonePage) return;
 
     // Check 1: Must be authenticated to access protected pages
     if (!isAuthenticated) {
@@ -60,10 +63,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         return;
       }
     }
-  }, [pathname, isAuthenticated, currentUser.role, isClientMounted, isAuthPage, logout, router]);
+  }, [pathname, isAuthenticated, currentUser.role, isClientMounted, isStandalonePage, logout, router]);
 
-  if (isAuthPage) {
-    return <main className="min-h-screen bg-[#F4F7FB]">{children}</main>;
+  if (isStandalonePage) {
+    return <main className="min-h-screen">{children}</main>;
   }
 
   // Prevent rendering internal dashboard layout for unauthenticated visitors
